@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formula Tree</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .node circle {
+            fill: #fff;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+
+        .node text {
+            font: 32px sans-serif;
+            fill: #000;
+            text-anchor: middle;
+        }
+
+        .link {
+            fill: none;
+            stroke: #555;
+            stroke-width: 1.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Define the tree data
+        const data = {
+            name: "×",
+            children: [
+                {
+                    name: "+",
+                    children: [
+                        { name: "A" },
+                        {
+                            name: "/",
+                            children: [
+                                { name: "D" },
+                                { name: "E" }
+                            ]
+                        },
+                        {
+                            name: "@",
+                            children: [
+                                { name: "F" },
+                                { name: "G" },
+                                { name: "H" }
+                            ]
+                        }
+                    ]
+                },
+                { name: "B" },
+                { name: "C" }
+            ]
+        };
+
+        // Set the dimensions and margins of the diagram
+        const margin = { top: 80, right: 90, bottom: 30, left: 90 },
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        // Append the svg object to the body of the page
+        const svg = d3.select("body").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate("
+                + margin.left + "," + margin.top + ")");
+
+        const root = d3.hierarchy(data);
+
+        const treeLayout = d3.tree().size([width, height]);
+
+        treeLayout(root);
+
+        // Adds the links between the nodes
+        svg.selectAll('.link')
+            .data(root.descendants().slice(1))
+            .enter().append('path')
+            .attr('class', 'link')
+            .attr('d', d => {
+                return "M" + d.x + "," + d.y
+                    + "C" + d.x + "," + (d.y + d.parent.y) / 2
+                    + " " + d.parent.x + "," + (d.y + d.parent.y) / 2
+                    + " " + d.parent.x + "," + d.parent.y;
+            });
+
+        // Adds each node as a group
+        const node = svg.selectAll('.node')
+            .data(root.descendants())
+            .enter().append('g')
+            .attr('class', d => 'node' +
+                (d.children ? ' node--internal' : ' node--leaf'))
+            .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
+
+        // Adds the circle to the node
+        node.append('circle')
+            .attr('r', 20);
+
+        // Adds the text to the node
+        node.append('text')
+            .attr('dy', '.35em')
+            .text(d => d.data.name);
+
+    </script>
+</body>
+
+</html>
